@@ -11,3 +11,10 @@ services:
         constraints:
           - "node.role==manager"
 
+  api:
+    image: ghcr.io/agmcc/csc8499/go-server
+    ports:
+      - 8080:8080
+    # Should deploy across amd64 + armv7
+    deploy:
+      replicas: 8
