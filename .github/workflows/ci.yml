@@ -28,5 +28,5 @@ jobs:
           platforms: linux/amd64,linux/arm/v7
           push: true
           tags: |
-            docker.pkg.github.com/${{github.repository}}/go-server:${{github.sha}}
-            docker.pkg.github.com/${{github.repository}}/go-server:latest
+            docker.pkg.github.com/${{github.actor}}/${{github.repository}}/go-server:${{github.sha}}
+            docker.pkg.github.com/${{github.actor}}/${{github.repository}}/go-server:latest
