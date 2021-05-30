@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 func greeting(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello!")
+	name, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintf(w, "Hello from "+name)
 	fmt.Println("Endpoint Hit: greeting")
 }
 
