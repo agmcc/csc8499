@@ -8,9 +8,10 @@ import (
 )
 
 func greeting(w http.ResponseWriter, r *http.Request) {
-	name, err := os.Hostname()
-	if err != nil {
-		panic(err)
+	name := "<Unknown>"
+	host, found := os.LookupEnv("HOST")
+	if found {
+		name = host
 	}
 	fmt.Fprintf(w, "Hello from "+name)
 	fmt.Println("Endpoint Hit: greeting")
