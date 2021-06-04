@@ -7,4 +7,5 @@ FROM alpine:3.13.5
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=0 /go/src/main .
+EXPOSE 5688/udp
 CMD ["./main"]
