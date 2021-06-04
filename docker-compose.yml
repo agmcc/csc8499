@@ -14,7 +14,7 @@ services:
   api:
     image: ghcr.io/agmcc/csc8499/go-server
     ports:
-      - 8080:8080
+      - 5688:5688/udp
     environment:
       HOST: "{{.Node.Hostname}}"
     # Should deploy across amd64 + armv7
