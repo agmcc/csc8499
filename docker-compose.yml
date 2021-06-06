@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.8"
 services:
   viz:
     image: dockersamples/visualizer
@@ -17,6 +17,17 @@ services:
       - 5688:5688/udp
     environment:
       HOST: "{{.Node.Hostname}}"
-    # Should deploy across amd64 + armv7
     deploy:
-      replicas: 8
+      replicas: 2
+      resources:
+        reservations:
+          cpus: '1'
+          memory: 250M
+      placement:
+        constraints:
+            - "node.role==worker"
+            - "node.labels.priority!=3"
+        # Will be added dynamically (Note: Seem to need to use reverse order?)
+        preferences:
+         - spread: node.labels.p1
+
