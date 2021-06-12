@@ -12,22 +12,15 @@ services:
           - "node.role==manager"
 
   api:
-    image: ghcr.io/agmcc/csc8499/go-server
+    image: ghcr.io/agmcc/csc8499/go-server:cd364ad6a08ca81b47d1c934abf64d9c53731cf7
     ports:
-      - 5688:5688/udp
+      - 8080:8080
     environment:
       HOST: "{{.Node.Hostname}}"
     deploy:
-      replicas: 2
+      replicas: 6
       resources:
         reservations:
           cpus: '1'
           memory: 250M
-      placement:
-        constraints:
-            - "node.role==worker"
-            - "node.labels.priority!=3"
-        # Will be added dynamically (Note: Seem to need to use reverse order?)
-        preferences:
-         - spread: node.labels.p1
 
