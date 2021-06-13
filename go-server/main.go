@@ -2,40 +2,81 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/binary"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
+	"net/http"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
-	coap "github.com/plgd-dev/go-coap/v2"
-	"github.com/plgd-dev/go-coap/v2/message"
-	"github.com/plgd-dev/go-coap/v2/message/codes"
-	"github.com/plgd-dev/go-coap/v2/mux"
+	"github.com/gorilla/mux"
 )
 
-func loggingMiddleware(next mux.Handler) mux.Handler {
-	return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
-		log.Printf(r.String())
-		next.ServeCOAP(w, r)
-	})
+type Load struct {
+	Host       string `json:"host"`
+	Difficulty int    `json:"difficulty"`
+	Match      string `json:"match"`
 }
 
-func greeting(w mux.ResponseWriter, r *mux.Message) {
-	name := "<Unknown>"
+func loadHandler(w http.ResponseWriter, r *http.Request) {
+	difficulty := getDifficulty()
+	match := doWork(difficulty)
+	host := hostname()
+	response := Load{host, difficulty, match}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func getDifficulty() int {
+	difficultyStr, exists := os.LookupEnv("DIFFICULTY")
+	if !exists {
+		difficultyStr = "4"
+	}
+
+	difficulty, err := strconv.Atoi(difficultyStr)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return difficulty
+}
+
+func doWork(difficulty int) string {
+	target := strings.Repeat("0", difficulty)
+	rand.Seed(time.Now().UTC().UnixNano())
+	start := rand.Int63()
+
+	for true {
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.LittleEndian, start)
+		hash := md5.Sum(buf.Bytes())
+		encoded := hex.EncodeToString(hash[:])
+		slice := encoded[:difficulty]
+		if slice == target {
+			return encoded
+		}
+		start = start + 1
+	}
+	return ""
+}
+
+func hostname() string {
+	name := "Unknown"
 	host, found := os.LookupEnv("HOST")
 	if found {
 		name = host
 	}
-	log.Print("Sending greeting")
-	err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("Hello from "+name)))
-	if err != nil {
-		log.Printf("Failed to set response: %v", err)
-	}
+	return name
 }
 
 func main() {
 	r := mux.NewRouter()
-	r.Use(loggingMiddleware)
-	r.Handle("/greeting", mux.HandlerFunc(greeting))
-	fmt.Println("Listening on UDP port 5688...")
-	log.Fatal(coap.ListenAndServe("udp", ":5688", r))
+	r.HandleFunc("/load", loadHandler)
+	fmt.Println("Listening on port 8080...")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

@@ -2,4 +2,4 @@ module main
 
 go 1.16
 
-require github.com/plgd-dev/go-coap/v2 v2.4.0
+require github.com/gorilla/mux v1.7.4
