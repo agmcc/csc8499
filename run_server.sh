@@ -1,3 +1,10 @@
 #!/bin/bash
-docker run -e HOST=$(hostname) -p "8080:8080" ghcr.io/agmcc/csc8499/go-server:cd364ad6a08ca81b47d1c934abf64d9c53731cf7
-
+docker run \
+--pull always \
+--rm \
+-e HOST=$(hostname) \
+-e DIFFICULTY=4 \
+-p "8080:8080" \
+--cpus=4 \
+--memory=200m \
+ghcr.io/agmcc/csc8499/go-server
