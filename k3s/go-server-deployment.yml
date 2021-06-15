@@ -16,8 +16,7 @@ spec:
     spec:
       containers:
       - name: go-server
-        # Old version that uses HTTP
-        image: ghcr.io/agmcc/csc8499/go-server:cd364ad6a08ca81b47d1c934abf64d9c53731cf7
+        image: ghcr.io/agmcc/csc8499/go-server
       imagePullSecrets:
         - name: ghcr
 

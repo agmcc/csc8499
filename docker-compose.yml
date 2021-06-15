@@ -12,7 +12,7 @@ services:
           - "node.role==manager"
 
   api:
-    image: ghcr.io/agmcc/csc8499/go-server:cd364ad6a08ca81b47d1c934abf64d9c53731cf7
+    image: ghcr.io/agmcc/csc8499/go-server
     ports:
       - 8080:8080
     environment:
