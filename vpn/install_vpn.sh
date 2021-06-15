@@ -1,6 +1,9 @@
 #!/bin/bash
 # Run as root
-sudo su
+if [ "$EUID" -ne 0 ]
+  then echo "Script must be run as root"
+  exit 1
+fi
 
 # Install
 apt update
@@ -10,15 +13,15 @@ apt install -y strongswan
 cp gcloud.conf /etc
 conf="include /etc/gcloud.conf"
 confFile=/etc/ipsec.conf
-grep -qxF $conf $confFile || echo $conf >> $confFile
+grep -qF $conf $confFile || echo $conf >> $confFile
 
 # Secret
 cp gcloud.secrets /etc
 read -p "Enter PSK: " psk
-secretsFile=/etc/ipsec.secrets
-sed -i "s/<PSK>/${PSK}/" $secretsFile
+sed -i "s/<PSK>/${psk}/" /etc/gcloud.secrets
 secret="include /etc/gcloud.secrets"
-grep -qxF $secret $secretsFile || echo $secret >> $secretsFile
+secretsFile=/etc/ipsec.secrets
+grep -qF $secret $secretsFile || echo $secret >> $secretsFile
 
 # Restart
-service ipsec restart
+service strongswan restart
