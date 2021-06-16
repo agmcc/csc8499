@@ -1,0 +1,26 @@
+# ipsec.conf - strongSwan IPsec configuration file
+
+# basic configuration
+config setup
+        charondebug="all"
+        uniqueids=yes
+        strictcrlpolicy=no
+
+conn gcloud
+  authby=secret
+  left=%defaultroute
+  leftid=${LEFT_ID}
+  leftsubnet=${LEFT_SUBNET}
+  right=${RIGHT}
+  rightsubnet=${RIGHT_SUBNET}
+  ike=aes256-sha2_256-modp1024!
+  esp=aes256-sha2_256!
+  keyingtries=0
+  ikelifetime=1h
+  lifetime=8h
+  dpddelay=30
+  dpdtimeout=120
+  dpdaction=restart
+  auto=start
+
+include /var/lib/strongswan/ipsec.conf.inc
