@@ -3,12 +3,13 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install strongswan -y
 
 sudo cp /etc/sysctl.conf /etc/sysctl.conf.bkp
-sudo cat >> /etc/sysctl.conf << EOF
+sudo su
+cat >> /etc/sysctl.conf << EOF
 net.ipv4.ip_forward = 1
 net.ipv4.conf.all.accept_redirects = 0
 net.ipv4.conf.all.send_redirects = 0
 EOF
-
+exit
 sudo sysctl -p /etc/sysctl.conf
 
 source vpn_config.sh
