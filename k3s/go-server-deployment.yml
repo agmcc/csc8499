@@ -17,6 +17,11 @@ spec:
       containers:
       - name: go-server
         image: ghcr.io/agmcc/csc8499/go-server
+        env:
+          - name: HOST
+            value: TODO
+          - name: DIFFICULTY
+            value: "4"
       imagePullSecrets:
         - name: ghcr
 
