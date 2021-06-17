@@ -18,17 +18,21 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var difficulty = getDifficulty()
+var host = hostname()
+
 type Load struct {
-	Host       string `json:"host"`
-	Difficulty int    `json:"difficulty"`
-	Match      string `json:"match"`
+	Host       string        `json:"host"`
+	Difficulty int           `json:"difficulty"`
+	Match      string        `json:"match"`
+	Elapsed    time.Duration `json:"elapsed"`
 }
 
 func loadHandler(w http.ResponseWriter, r *http.Request) {
-	difficulty := getDifficulty()
+	start := time.Now()
 	match := doWork(difficulty)
-	host := hostname()
-	response := Load{host, difficulty, match}
+	elapsed := time.Since(start)
+	response := Load{host, difficulty, match, elapsed}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -36,14 +40,20 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 func getDifficulty() int {
 	difficultyStr, exists := os.LookupEnv("DIFFICULTY")
 	if !exists {
-		difficultyStr = "4"
+		fmt.Println("No difficulty set, defaulting to 0")
+		difficultyStr = "0"
 	}
 
 	difficulty, err := strconv.Atoi(difficultyStr)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return difficulty
+
+	if difficulty >= 0 {
+		return difficulty
+	} else {
+		return 0
+	}
 }
 
 func doWork(difficulty int) string {
@@ -77,6 +87,8 @@ func hostname() string {
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/load", loadHandler)
-	fmt.Println("Listening on port 8080...")
+	fmt.Printf("Hostname: %s\n", host)
+	fmt.Printf("Difficulty: %d\n", difficulty)
+	fmt.Println("Listening on port 8080 ...")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
