@@ -19,7 +19,9 @@ spec:
         image: ghcr.io/agmcc/csc8499/go-server
         env:
           - name: HOST
-            value: TODO
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
           - name: DIFFICULTY
             value: "4"
       imagePullSecrets:
