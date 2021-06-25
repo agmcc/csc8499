@@ -1,21 +1,21 @@
 #!/bin/bash
 source ./venv/bin/activate
 
-if [ -z "$1" ]; then
-    echo "Usage: "$0" TESTNAME"
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 HOST TEST"
     exit 0
 fi
 
-test=$1
+host=$1
+test=$2
 
-if [ -d "$1" ]; then
-    echo "Test directory '${1}' already exists, exiting"
+if [ -d "$test" ]; then
+    echo "Test directory '${test}' already exists, exiting"
     exit 1
 fi
 
 mkdir $test && cd $test
 
-host=http://instance-2:8080
 users=100
 spawn=4
 time=90s

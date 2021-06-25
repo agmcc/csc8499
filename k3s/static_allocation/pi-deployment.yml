@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pi-deployment
+  labels:
+    app: go-server
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: go-server
+  template:
+    metadata:
+      labels:
+        app: go-server
+    spec:
+      containers:
+      - name: go-server
+        image: ghcr.io/agmcc/csc8499/go-server
+        resources:
+          limits:
+            cpu: "2"
+            memory: "200M"
+        env:
+          - name: HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: DIFFICULTY
+            value: "0"
+      imagePullSecrets:
+        - name: ghcr
+      # Attempt to deploy to Raspberry Pis first
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - arm
