@@ -15,13 +15,19 @@ fi
 
 mkdir $test && cd $test
 
+host=http://instance-2:8080
+users=100
+spawn=4
+time=90s
+
 locust \
 --locustfile ../locustfile.py \
 --headless \
---host http://pilab-01:8080 \
---users 100 \
---spawn-rate 4 \
---run-time 90s \
+--host $host \
+--users $users \
+--spawn-rate $spawn \
+--run-time $time \
 --csv $test \
 --html "${test}.html" \
 --only-summary
+

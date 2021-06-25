@@ -1,12 +1,12 @@
 #!/bin/bash
-if [ -z "$1" ]; then
-    echo "Usage: $0 DIFFICULTY"
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 CPUS MEMORY DIFFICULTY"
     exit 0
 fi
 
-difficulty=$1
-cpus=2
-memory=200m
+cpus=$1
+memory=$2
+difficulty=$3
 
 echo "C ${cpus} M ${memory} D ${difficulty}"
 
