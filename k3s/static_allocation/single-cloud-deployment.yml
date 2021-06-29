@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: single-cloud-deployment
+  labels:
+    app: go-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-server
+  template:
+    metadata:
+      labels:
+        app: go-server
+    spec:
+      containers:
+      - name: go-server
+        image: ghcr.io/agmcc/csc8499/go-server
+        resources:
+          limits:
+            cpu: "2"
+            memory: "200M"
+        env:
+          - name: HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: DIFFICULTY
+            value: "0"
+      imagePullSecrets:
+        - name: ghcr
+      nodeSelector:
+        kubernetes.io/hostname: instance-2
