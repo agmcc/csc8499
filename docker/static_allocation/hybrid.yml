@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  viz:
+    image: dockersamples/visualizer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 9000:8080
+    deploy:
+      placement:
+        constraints:
+          - "node.role==manager"
+
+  api:
+    image: ghcr.io/agmcc/csc8499/go-server
+    ports:
+      - 9001:8080
+    environment:
+      HOST: "{{.Node.Hostname}}"
+      DIFFICULTY: "0"
+    deploy:
+      replicas: 6
+      resources:
+        reservations:
+          cpus: "2"
+          memory: 200M
+      placement:
+        constraints:
+          - "node.role==worker"
