@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: default-dep
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: default-deployment
+  namespace: default-dep
+  labels:
+    app: go-server
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: go-server
+  template:
+    metadata:
+      labels:
+        app: go-server
+    spec:
+      containers:
+      - name: go-server
+        image: ghcr.io/agmcc/csc8499/go-server
+        resources:
+          limits:
+            cpu: "2"
+            memory: "200M"
+        env:
+          - name: HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: DIFFICULTY
+            value: "0"
+      imagePullSecrets:
+        - name: ghcr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: default-service
+  namespace: default-dep
+spec:
+  type: NodePort
+  selector:
+    app: go-server
+  ports:
+    - protocol: TCP
+      port: 8080
+      nodePort: 30000
