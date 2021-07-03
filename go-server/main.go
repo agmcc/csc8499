@@ -16,10 +16,19 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var difficulty = getDifficulty()
 var host = hostname()
+
+var httpDuration = promauto.NewSummaryVec(prometheus.SummaryOpts{
+	Name:       "http_response_time_seconds",
+	Help:       "Duration of HTTP requests.",
+	Objectives: map[float64]float64{0.5: 0.05, 0.99: 0.001},
+}, []string{"path", "host"})
 
 type Load struct {
 	Host       string        `json:"host"`
@@ -84,11 +93,28 @@ func hostname() string {
 	return name
 }
 
+func metricsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		route := mux.CurrentRoute(r)
+		path, _ := route.GetPathTemplate()
+
+		timer := prometheus.NewTimer(httpDuration.WithLabelValues(path, host))
+		next.ServeHTTP(w, r)
+		timer.ObserveDuration()
+	})
+}
+
 func main() {
 	r := mux.NewRouter()
+
+	r.Use(metricsMiddleware)
+
+	r.Handle("/metrics", promhttp.Handler())
 	r.HandleFunc("/load", loadHandler)
+
 	fmt.Printf("Hostname: %s\n", host)
 	fmt.Printf("Difficulty: %d\n", difficulty)
 	fmt.Println("Listening on port 8080 ...")
+
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
