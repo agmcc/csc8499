@@ -23,8 +23,16 @@ services:
       replicas: 2
       resources:
         reservations:
-          cpus: '2'
+          cpus: "2"
           memory: 200M
+
+  latency-agent:
+    image: ghcr.io/agmcc/csc8499/latency-agent
+    environment:
+      AGENT_NODE: "{{.Node.Hostname}}"
+      AGENT_HOSTS: "pilab-01"
+    deploy:
+      mode: global
 
   prometheus:
     image: prom/prometheus

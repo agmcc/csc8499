@@ -1,0 +1,38 @@
+name: latency-agent
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'latency-agent/**'
+
+jobs:
+  docker:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Log in to GitHub Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: latency-agent
+          platforms: linux/amd64,linux/arm/v7
+          push: true
+          tags: |
+            ghcr.io/${{github.repository}}/latency-agent:${{github.sha}}
+            ghcr.io/${{github.repository}}/latency-agent:latest
