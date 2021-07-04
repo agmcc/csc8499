@@ -24,6 +24,13 @@ spec:
             - name: grafana-datasource-config
               mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
+      tolerations:
+        # Allow on master
+        - key: node-role.kubernetes.io/master
+          value: "true"
+          effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: instance-1
       volumes:
         # TODO: Persistant volume for data/dashboards
         - name: grafana-datasource-config
