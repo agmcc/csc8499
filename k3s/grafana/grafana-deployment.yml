@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+  namespace: monitoring
+  labels:
+    app: grafana-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-server
+  template:
+    metadata:
+      labels:
+        app: grafana-server
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: grafana-datasource-config
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+      volumes:
+        # TODO: Persistant volume for data/dashboards
+        - name: grafana-datasource-config
+          configMap:
+            name: grafana-datasource-conf
