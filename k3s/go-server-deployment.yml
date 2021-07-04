@@ -5,7 +5,7 @@ metadata:
   labels:
     app: go-server
 spec:
-  replicas: 6
+  replicas: 2
   selector:
     matchLabels:
       app: go-server
@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: go-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "8080"
     spec:
       containers:
       - name: go-server
@@ -26,4 +29,3 @@ spec:
             value: "4"
       imagePullSecrets:
         - name: ghcr
-
