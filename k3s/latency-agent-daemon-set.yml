@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: latency-agent-daemon-set
+  labels:
+    app: latency-agent
+spec:
+  selector:
+    matchLabels:
+      app: latency-agent
+  template:
+    metadata:
+      labels:
+        app: latency-agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "9000"
+    spec:
+      containers:
+      - name: latency-agent
+        image: ghcr.io/agmcc/csc8499/latency-agent
+        env:
+          - name: AGENT_NODE
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: AGENT_HOSTS
+            value: "pilab-01"
+      imagePullSecrets:
+        - name: ghcr
