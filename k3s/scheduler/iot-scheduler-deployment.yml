@@ -28,9 +28,7 @@ spec:
             cpu: '0.1'
         command:
         - /usr/local/bin/iot-scheduler
-        - --address=0.0.0.0
-        - --leader-elect=false
-        - --scheduler-name=iot-scheduler
+        - --config=/etc/kubernetes/scheduler-config.yml
         livenessProbe:
           httpGet:
             path: /healthz
@@ -42,10 +40,16 @@ spec:
             port: 10251
         securityContext:
           privileged: false
-        volumeMounts: []
+        volumeMounts:
+          - name: iot-scheduler-config
+            mountPath: /etc/kubernetes
+            readOnly: true
       hostNetwork: false
       hostPID: false
-      volumes: []
+      volumes:
+      - name: iot-scheduler-config
+        configMap:
+          name: iot-scheduler-conf
       tolerations:
       # Allow on master
       - key: node-role.kubernetes.io/master
