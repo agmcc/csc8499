@@ -14,5 +14,7 @@ data:
         # Demo plugin config
         plugins:
           score:
+            enabled:
+            - name: "Dummy"
             disabled:
             - name: "*"
