@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: scheduler
+    tier: control-plane
+  name: iot-scheduler
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      component: scheduler
+      tier: control-plane
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: scheduler
+        tier: control-plane
+        version: second
+    spec:
+      serviceAccountName: iot-scheduler
+      containers:
+      - name: iot-scheduler
+        image: ghcr.io/agmcc/csc8499/iot-scheduler
+        resources:
+          requests:
+            cpu: '0.1'
+        command:
+        - /usr/local/bin/iot-scheduler
+        - --address=0.0.0.0
+        - --leader-elect=false
+        - --scheduler-name=iot-scheduler
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10251
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 10251
+        securityContext:
+          privileged: false
+        volumeMounts: []
+      hostNetwork: false
+      hostPID: false
+      volumes: []
+      tolerations:
+      # Allow on master
+      - key: node-role.kubernetes.io/master
+        value: "true"
+        effect: NoSchedule
+      imagePullSecrets:
+        - name: ghcr
