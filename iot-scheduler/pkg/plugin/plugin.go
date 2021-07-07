@@ -45,7 +45,7 @@ func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleStat
 	latencies := metrics.GetLatencies(nodeNames)
 	m := make(map[string]int64)
 	for k, v := range latencies {
-		m[k] = math.MaxInt64 - v
+		m[k] = math.MaxInt64/framework.MaxNodeScore - v
 	}
 	latencyAwareState := &LatencyAwareState{m}
 	state.Write(LatencyAwareStateKey, latencyAwareState)
