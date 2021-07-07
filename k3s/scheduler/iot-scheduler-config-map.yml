@@ -11,10 +11,14 @@ data:
       leaderElect: false
     profiles:
       - schedulerName: iot-scheduler
-        # Demo plugin config
         plugins:
+          preScore:
+            disabled:
+            - name: "*"
+            enabled:
+            - name: "LatencyAware"
           score:
             disabled:
             - name: "*"
             enabled:
-            - name: "Dummy"
+            - name: "LatencyAware"
