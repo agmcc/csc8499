@@ -38,15 +38,30 @@ func (ps *LatencyAware) Name() string {
 
 func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodes []*v1.Node) *framework.Status {
 	klog.Info("Entered PreScore")
+
 	var nodeNames []string
 	for _, n := range nodes {
 		nodeNames = append(nodeNames, n.Name)
 	}
+
 	latencies := metrics.GetLatencies(nodeNames)
-	m := make(map[string]int64)
-	for k, v := range latencies {
-		m[k] = math.MaxInt64/framework.MaxNodeScore - v
+
+	var maxLatency int64 = -math.MaxInt64
+	for _, l := range latencies {
+		if l > maxLatency {
+			maxLatency = l
+		}
 	}
+	klog.Infof("Max latency: %d", maxLatency)
+
+	m := make(map[string]int64)
+	klog.Info("Inverting scores")
+	for k, v := range latencies {
+		s := maxLatency - v
+		m[k] = s
+		klog.Infof("%s: %d", k, s)
+	}
+
 	latencyAwareState := &LatencyAwareState{m}
 	state.Write(LatencyAwareStateKey, latencyAwareState)
 	return nil
@@ -62,9 +77,9 @@ func (ps *LatencyAware) Score(ctx context.Context, state *framework.CycleState, 
 	if !ok {
 		klog.Fatal("Unable to convert cycle state to latency state")
 	}
-	latency := latencyAwareState.m[nodeName]
-	klog.Infof("Loaded latency value for node %s: %d", nodeName, latency)
-	return latency, nil
+	score := latencyAwareState.m[nodeName]
+	klog.Infof("Loaded score for node %s: %d", nodeName, score)
+	return score, nil
 }
 
 func (ps *LatencyAware) ScoreExtensions() framework.ScoreExtensions {
