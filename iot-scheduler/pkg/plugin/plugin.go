@@ -37,10 +37,10 @@ func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleStat
 	klog.Info("Entered PreScore")
 	m := make(map[string]int64)
 	for _, n := range nodes {
-		klog.Info("Pre-scoring node '%s' based on name length", n)
 		nodeName := n.Name
+		klog.Infof("Pre-scoring node '%s' based on name length", nodeName)
 		length := int64(len(nodeName))
-		klog.Info("Length: %s", length)
+		klog.Infof("Length: %d", length)
 		m[nodeName] = length
 	}
 	latencyAwareState := &LatencyAwareState{m}
@@ -49,17 +49,17 @@ func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleStat
 }
 
 func (ps *LatencyAware) Score(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodeName string) (int64, *framework.Status) {
-	klog.Info("Calculating score for node: %s", nodeName)
+	klog.Infof("Calculating score for node: %s", nodeName)
 	c, err := state.Read(LatencyAwareStateKey)
 	if err != nil {
-		klog.Fatal("Unable to read state: %s", err)
+		klog.Fatal("Unable to read state", err)
 	}
 	latencyAwareState, ok := c.(*LatencyAwareState)
 	if !ok {
 		klog.Fatal("Unable to convert cycle state to latency state")
 	}
 	latency := latencyAwareState.m[nodeName]
-	klog.Info("Loaded latency value for node %s: %s", latency, nodeName)
+	klog.Infof("Loaded latency value for node %s: %d", latency, nodeName)
 	return latency, nil
 }
 
@@ -69,21 +69,24 @@ func (ps *LatencyAware) ScoreExtensions() framework.ScoreExtensions {
 
 func (ps *LatencyAware) NormalizeScore(ctx context.Context, state *framework.CycleState, pod *v1.Pod, scores framework.NodeScoreList) *framework.Status {
 	klog.Info("Normalizing score")
-	klog.Info("Pre-normalized scores: %s", scores)
+	klog.Infof("Pre-normalized scores: %s", scores)
 	highest := int64(0)
 	for _, s := range scores {
 		if s.Score > highest {
 			highest = s.Score
 		}
 	}
-	for _, s := range scores {
-		s.Score = s.Score * framework.MaxNodeScore / highest
+	klog.Infof("Higest score: %d", highest)
+	for i, s := range scores {
+		normalized := s.Score * framework.MaxNodeScore / highest
+		klog.Infof("Normalized score for %s: %d (was %d)", s.Name, normalized, s.Score)
+		scores[i].Score = normalized
 	}
-	klog.Info("Normalized scores: %s", scores)
+	klog.Infof("Normalized scores: %s", scores)
 	return nil
 }
 
 func New(_ runtime.Object, h framework.Handle) (framework.Plugin, error) {
-	klog.Info("Creating %s plugin", Name)
+	klog.Infof("Creating %s plugin", Name)
 	return &LatencyAware{handle: h}, nil
 }
