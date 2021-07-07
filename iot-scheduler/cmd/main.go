@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	klog.Info("Hello, scheduluer")
+	klog.Info("Starting scheduluer")
 
 	command := app.NewSchedulerCommand(
 		app.WithPlugin(plugin.Name, plugin.New),

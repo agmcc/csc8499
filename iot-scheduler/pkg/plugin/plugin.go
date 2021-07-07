@@ -2,6 +2,9 @@ package plugin
 
 import (
 	"context"
+	"math"
+
+	"iot-scheduler/pkg/metrics"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -35,13 +38,14 @@ func (ps *LatencyAware) Name() string {
 
 func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodes []*v1.Node) *framework.Status {
 	klog.Info("Entered PreScore")
-	m := make(map[string]int64)
+	var nodeNames []string
 	for _, n := range nodes {
-		nodeName := n.Name
-		klog.Infof("Pre-scoring node '%s' based on name length", nodeName)
-		length := int64(len(nodeName))
-		klog.Infof("Length: %d", length)
-		m[nodeName] = length
+		nodeNames = append(nodeNames, n.Name)
+	}
+	latencies := metrics.GetLatencies(nodeNames)
+	m := make(map[string]int64)
+	for k, v := range latencies {
+		m[k] = math.MaxInt64 - v
 	}
 	latencyAwareState := &LatencyAwareState{m}
 	state.Write(LatencyAwareStateKey, latencyAwareState)
@@ -59,7 +63,7 @@ func (ps *LatencyAware) Score(ctx context.Context, state *framework.CycleState, 
 		klog.Fatal("Unable to convert cycle state to latency state")
 	}
 	latency := latencyAwareState.m[nodeName]
-	klog.Infof("Loaded latency value for node %s: %d", latency, nodeName)
+	klog.Infof("Loaded latency value for node %s: %d", nodeName, latency)
 	return latency, nil
 }
 
@@ -69,20 +73,20 @@ func (ps *LatencyAware) ScoreExtensions() framework.ScoreExtensions {
 
 func (ps *LatencyAware) NormalizeScore(ctx context.Context, state *framework.CycleState, pod *v1.Pod, scores framework.NodeScoreList) *framework.Status {
 	klog.Info("Normalizing score")
-	klog.Infof("Pre-normalized scores: %s", scores)
-	highest := int64(0)
+	var highest int64 = -math.MaxInt64
+	highestScoreNode := ""
 	for _, s := range scores {
 		if s.Score > highest {
 			highest = s.Score
+			highestScoreNode = s.Name
 		}
 	}
-	klog.Infof("Higest score: %d", highest)
+	klog.Infof("Node with highest score is %s: %d", highestScoreNode, highest)
 	for i, s := range scores {
 		normalized := s.Score * framework.MaxNodeScore / highest
 		klog.Infof("Normalized score for %s: %d (was %d)", s.Name, normalized, s.Score)
 		scores[i].Score = normalized
 	}
-	klog.Infof("Normalized scores: %s", scores)
 	return nil
 }
 
