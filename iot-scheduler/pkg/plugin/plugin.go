@@ -23,7 +23,7 @@ type LatencyAwareState struct {
 const (
 	Name                 = "LatencyAware"
 	LatencyAwareStateKey = "LatencyAwareState"
-	MetricsAddress       = "http://prometheus-service:9090"
+	MetricsAddress       = "http://prometheus-service.monitoring.svc.cluster.local:9090"
 )
 
 var _ = framework.PreScorePlugin(&LatencyAware{})
