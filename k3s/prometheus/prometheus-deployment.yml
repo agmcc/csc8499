@@ -30,7 +30,8 @@ spec:
           value: "true"
           effect: NoSchedule
       nodeSelector:
-        kubernetes.io/hostname: instance-1
+        # TODO: Should run on master
+        kubernetes.io/hostname: pilab-05
       volumes:
         - name: prometheus-config
           configMap:
