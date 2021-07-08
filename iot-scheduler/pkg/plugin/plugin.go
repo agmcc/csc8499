@@ -23,6 +23,7 @@ type LatencyAwareState struct {
 const (
 	Name                 = "LatencyAware"
 	LatencyAwareStateKey = "LatencyAwareState"
+	MetricsAddress       = "http://prometheus-service:9090"
 )
 
 var _ = framework.PreScorePlugin(&LatencyAware{})
@@ -44,7 +45,7 @@ func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleStat
 		nodeNames = append(nodeNames, n.Name)
 	}
 
-	latencies := metrics.GetLatencies(nodeNames)
+	latencies := metrics.GetLatencies(ctx, MetricsAddress, nodeNames)
 
 	var maxLatency int64 = -math.MaxInt64
 	for _, l := range latencies {
