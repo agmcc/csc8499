@@ -18,11 +18,25 @@ spec:
       containers:
         - name: grafana
           image: grafana/grafana
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-admin-secret
+                  key: password
           ports:
             - containerPort: 3000
           volumeMounts:
-            - name: grafana-datasource-config
+            - name: grafana-datasource-prov-config
               mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+          volumeMounts:
+            - name: grafana-dashboard-prov-config
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+          volumeMounts:
+            - name: grafana-dashboard-config
+              mountPath: /var/lib/grafana/dashboards
               readOnly: true
       tolerations:
         # Allow on master
@@ -32,7 +46,13 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: instance-1
       volumes:
-        # TODO: Persistant volume for data/dashboards
-        - name: grafana-datasource-config
+        # TODO: Persistant volume for data
+        - name: grafana-datasource-prov-config
           configMap:
-            name: grafana-datasource-conf
+            name: grafana-datasource-prov-conf
+        - name: grafana-dashboard-prov-config
+          configMap:
+            name: grafana-dashboard-prov-conf
+        - name: grafana-dashboard-config
+          configMap:
+            name: grafana-dashboard-conf
