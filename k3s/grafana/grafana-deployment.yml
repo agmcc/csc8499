@@ -30,11 +30,9 @@ spec:
             - name: grafana-datasource-prov-config
               mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
-          volumeMounts:
             - name: grafana-dashboard-prov-config
               mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
-          volumeMounts:
             - name: grafana-dashboard-config
               mountPath: /var/lib/grafana/dashboards
               readOnly: true
