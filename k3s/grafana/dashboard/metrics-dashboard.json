@@ -94,7 +94,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "displayMode": "list",
           "placement": "bottom"
@@ -106,7 +106,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(avg without (instance) (network_latency_seconds{status=\"success\", quantile=\"0.5\"}) * 1000) + on(host) (avg without(instance) (http_response_time_seconds{path=\"/load\", quantile=\"0.5\"}) * 1000)",
+          "expr": "network_latency + on(host) response_time",
           "hide": false,
           "interval": "",
           "legendFormat": "{{host}}",
@@ -209,7 +209,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "displayMode": "list",
           "placement": "bottom"
@@ -221,7 +221,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "\navg without (instance) (network_latency_seconds{status=\"success\", quantile=\"0.5\"}) * 1000",
+          "expr": "network_latency",
           "interval": "",
           "intervalFactor": 1,
           "legendFormat": "{{host}}",
@@ -294,7 +294,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "displayMode": "list",
           "placement": "bottom"
@@ -306,7 +306,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "avg without(instance, kubernetes_pod_name) (http_response_time_seconds{path=\"/load\", quantile=\"0.5\"}) * 1000",
+          "expr": "response_time",
           "interval": "",
           "legendFormat": "{{host}}",
           "refId": "A"
@@ -324,12 +324,12 @@
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Metrics",
   "uid": "qP2hI9zgk",
-  "version": 3
+  "version": 1
 }

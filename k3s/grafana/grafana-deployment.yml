@@ -24,8 +24,6 @@ spec:
                 secretKeyRef:
                   name: grafana-admin-secret
                   key: password
-          ports:
-            - containerPort: 3000
           volumeMounts:
             - name: grafana-datasource-prov-config
               mountPath: /etc/grafana/provisioning/datasources

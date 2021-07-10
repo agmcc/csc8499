@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"iot-scheduler/pkg/metrics"
+	"iot-scheduler/pkg/utils"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,7 +18,14 @@ type LatencyAware struct {
 }
 
 type LatencyAwareState struct {
-	m map[string]int64
+	metrics         map[string]NodeMetrics
+	maxLatency      int64
+	maxResponseTime int64
+}
+
+type NodeMetrics struct {
+	latency      int64
+	responseTime int64
 }
 
 const (
@@ -45,26 +53,41 @@ func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleStat
 		nodeNames = append(nodeNames, n.Name)
 	}
 
-	latencies := metrics.GetLatencies(ctx, MetricsAddress, nodeNames)
+	api := metrics.NewAPI(MetricsAddress)
 
+	latencies := metrics.GetNetworkLatencies(ctx, api, nodeNames)
+	klog.Info("Retreived latency metrics: ", latencies)
+
+	responseTimes := metrics.GetResponseTimes(ctx, api, nodeNames)
+	klog.Info("Retrieved response time metrics: ", responseTimes)
+
+	filledLatencies := utils.FillMissingValues(latencies, metrics.Missing)
+	klog.Info("Filled latency metrics: ", filledLatencies)
+
+	filledResponseTimes := utils.FillMissingValues(responseTimes, metrics.Missing)
+	klog.Info("Filled response time metrics: ", filledResponseTimes)
+
+	m := make(map[string]NodeMetrics)
 	var maxLatency int64 = -math.MaxInt64
-	for _, l := range latencies {
+	var maxResponseTime int64 = -math.MaxInt64
+
+	for _, n := range nodeNames {
+		l := filledLatencies[n]
 		if l > maxLatency {
 			maxLatency = l
 		}
+		r := filledResponseTimes[n]
+		if r > maxResponseTime {
+			maxResponseTime = r
+		}
+		m[n] = NodeMetrics{latency: l, responseTime: r}
 	}
-	klog.Infof("Max latency: %d", maxLatency)
+	klog.Infof("Max latency is %d, max response time is %d", maxLatency, maxResponseTime)
 
-	m := make(map[string]int64)
-	klog.Info("Inverting scores")
-	for k, v := range latencies {
-		s := maxLatency - v
-		m[k] = s
-		klog.Infof("%s: %d", k, s)
-	}
-
-	latencyAwareState := &LatencyAwareState{m}
+	latencyAwareState := &LatencyAwareState{metrics: m, maxLatency: maxLatency, maxResponseTime: maxResponseTime}
+	klog.Infof("LatencyAwareState: %v", latencyAwareState)
 	state.Write(LatencyAwareStateKey, latencyAwareState)
+
 	return nil
 }
 
@@ -78,8 +101,13 @@ func (ps *LatencyAware) Score(ctx context.Context, state *framework.CycleState, 
 	if !ok {
 		klog.Fatal("Unable to convert cycle state to latency state")
 	}
-	score := latencyAwareState.m[nodeName]
-	klog.Infof("Loaded score for node %s: %d", nodeName, score)
+
+	metrics := latencyAwareState.metrics[nodeName]
+	latencyScore := latencyAwareState.maxLatency - metrics.latency
+	responseTimeScore := latencyAwareState.maxResponseTime - metrics.responseTime
+
+	score := latencyScore + responseTimeScore
+	klog.Infof("Combined score for node %s: %d (latency score %d, response time score %d)", nodeName, score, latencyScore, responseTimeScore)
 	return score, nil
 }
 

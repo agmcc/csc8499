@@ -5,11 +5,21 @@ import (
 	"testing"
 )
 
-func TestGetLatencies(t *testing.T) {
-	t.Log("Running test")
-	nodes := []string{"docker-desktop"}
-	latencies := GetLatencies(context.TODO(), "http://localhost:32000", nodes)
-	for n, l := range latencies {
-		t.Logf("%s: %d", n, l)
-	}
+const (
+	Address = "http://localhost:32000"
+)
+
+func TestGetNetworkLatencies(t *testing.T) {
+	nodes := []string{"docker-desktop", "unknown"}
+	api := NewAPI(Address)
+	latencies := GetNetworkLatencies(context.TODO(), api, nodes)
+	t.Log("Latencies: ", latencies)
+
+}
+
+func TestGetResponseTimes(t *testing.T) {
+	nodes := []string{"docker-desktop", "unknown"}
+	api := NewAPI(Address)
+	responseTimes := GetResponseTimes(context.TODO(), api, nodes)
+	t.Log("Response times: ", responseTimes)
 }

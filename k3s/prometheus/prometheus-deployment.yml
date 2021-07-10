@@ -18,8 +18,6 @@ spec:
       containers:
         - name: prometheus
           image: prom/prometheus
-          ports:
-            - containerPort: 9090
           volumeMounts:
             - name: prometheus-config
               mountPath: /etc/prometheus
