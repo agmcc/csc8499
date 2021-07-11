@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: default-deployment
+  labels:
+    app: go-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: go-server
+  template:
+    metadata:
+      labels:
+        app: go-server
+    spec:
+      containers:
+        - name: go-server
+          image: ghcr.io/agmcc/csc8499/go-server
+          resources:
+            limits:
+              cpu: "1"
+              memory: "200M"
+          env:
+            - name: HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: DIFFICULTY
+              value: "1"
+      imagePullSecrets:
+        - name: ghcr
+      # Limit 2 pods per node
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: go-server
