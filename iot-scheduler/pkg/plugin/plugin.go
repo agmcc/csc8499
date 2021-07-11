@@ -57,13 +57,11 @@ func (ps *LatencyAware) PreScore(ctx context.Context, state *framework.CycleStat
 
 	latencies := metrics.GetNetworkLatencies(ctx, api, nodeNames)
 	klog.Info("Retreived latency metrics: ", latencies)
-
-	responseTimes := metrics.GetResponseTimes(ctx, api, nodeNames)
-	klog.Info("Retrieved response time metrics: ", responseTimes)
-
 	filledLatencies := utils.FillMissingValues(latencies, metrics.Missing)
 	klog.Info("Filled latency metrics: ", filledLatencies)
 
+	responseTimes := metrics.GetResponseTimes(ctx, api, nodeNames)
+	klog.Info("Retrieved response time metrics: ", responseTimes)
 	filledResponseTimes := utils.FillMissingValues(responseTimes, metrics.Missing)
 	klog.Info("Filled response time metrics: ", filledResponseTimes)
 
@@ -127,7 +125,12 @@ func (ps *LatencyAware) NormalizeScore(ctx context.Context, state *framework.Cyc
 	}
 	klog.Infof("Node with highest score is %s: %d", highestScoreNode, highest)
 	for i, s := range scores {
-		normalized := s.Score * framework.MaxNodeScore / highest
+		var normalized int64
+		if highest != 0 {
+			normalized = s.Score * framework.MaxNodeScore / highest
+		} else {
+			normalized = 0
+		}
 		klog.Infof("Normalized score for %s: %d (was %d)", s.Name, normalized, s.Score)
 		scores[i].Score = normalized
 	}
