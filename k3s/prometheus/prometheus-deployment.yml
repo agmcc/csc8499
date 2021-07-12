@@ -22,16 +22,17 @@ spec:
             - name: prometheus-config
               mountPath: /etc/prometheus
               readOnly: true
-      tolerations:
-        # Allow on master
-        - key: node-role.kubernetes.io/master
-          value: "true"
-          effect: NoSchedule
-      nodeSelector:
-        # TODO: Should run on master
-        kubernetes.io/hostname: pilab-05
+      # Constrain to ARM (edge) devices
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: beta.kubernetes.io/arch
+                  operator: In
+                  values:
+                    - arm
       volumes:
         - name: prometheus-config
           configMap:
             name: prometheus-conf
-        # TODO: Persistant volume to store prometheus data

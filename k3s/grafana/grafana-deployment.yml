@@ -40,9 +40,8 @@ spec:
           value: "true"
           effect: NoSchedule
       nodeSelector:
-        kubernetes.io/hostname: instance-1
+        node-role.kubernetes.io/master: ""
       volumes:
-        # TODO: Persistant volume for data
         - name: grafana-datasource-prov-config
           configMap:
             name: grafana-datasource-prov-conf
