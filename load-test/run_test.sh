@@ -36,8 +36,8 @@ fi
 mkdir -p $testDir && cd $testDir
 
 users=100
-spawn=4
-time=90s
+spawn=7
+time=60s
 
 locust \
 --locustfile $locustFile \
