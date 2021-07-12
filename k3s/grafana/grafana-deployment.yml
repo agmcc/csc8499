@@ -40,7 +40,7 @@ spec:
           value: "true"
           effect: NoSchedule
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/master: "true"
       volumes:
         - name: grafana-datasource-prov-config
           configMap:
